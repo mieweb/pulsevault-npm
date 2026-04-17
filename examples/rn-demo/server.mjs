@@ -128,45 +128,50 @@ app.get(
     },
   },
   async (_req, reply) => {
-  let entries;
-  try {
-    entries = await readdir(dataDir, { withFileTypes: true });
-  } catch (err) {
-    if (err.code === "ENOENT") return reply.send([]);
-    throw err;
-  }
+    let entries;
+    try {
+      entries = await readdir(dataDir, { withFileTypes: true });
+    } catch (err) {
+      if (err.code === "ENOENT") return reply.send([]);
+      throw err;
+    }
 
-  const videos = await Promise.all(
-    entries
-      .filter((e) => e.isDirectory())
-      .map(async (e) => {
-        const videoid = e.name;
-        const videoDir = path.join(dataDir, videoid, "video");
-        let files;
-        try {
-          files = await readdir(videoDir);
-        } catch {
-          return null;
-        }
-        const mp4 = files.find((f) => f.endsWith(".mp4") && !f.endsWith(".mp4.json"));
-        if (!mp4) return null;
+    const videos = await Promise.all(
+      entries
+        .filter((e) => e.isDirectory())
+        .map(async (e) => {
+          const videoid = e.name;
+          const videoDir = path.join(dataDir, videoid, "video");
+          let files;
+          try {
+            files = await readdir(videoDir);
+          } catch {
+            return null;
+          }
+          const mp4 = files.find(
+            (f) => f.endsWith(".mp4") && !f.endsWith(".mp4.json"),
+          );
+          if (!mp4) return null;
 
-        const mp4Path = path.join(videoDir, mp4);
-        const jsonPath = `${mp4Path}.json`;
-        const [mp4Stat, meta] = await Promise.all([
-          stat(mp4Path).catch(() => null),
-          readFile(jsonPath, "utf8").then(JSON.parse).catch(() => null),
-        ]);
-        if (!mp4Stat || mp4Stat.size === 0) return null;
+          const mp4Path = path.join(videoDir, mp4);
+          const jsonPath = `${mp4Path}.json`;
+          const [mp4Stat, meta] = await Promise.all([
+            stat(mp4Path).catch(() => null),
+            readFile(jsonPath, "utf8")
+              .then(JSON.parse)
+              .catch(() => null),
+          ]);
+          if (!mp4Stat || mp4Stat.size === 0) return null;
 
-        return {
-          videoid,
-          filename: meta?.metadata?.filename ?? mp4,
-          size: mp4Stat.size,
-          creation_date: meta?.creation_date ?? mp4Stat.birthtime.toISOString(),
-        };
-      }),
-  );
+          return {
+            videoid,
+            filename: meta?.metadata?.filename ?? mp4,
+            size: mp4Stat.size,
+            creation_date:
+              meta?.creation_date ?? mp4Stat.birthtime.toISOString(),
+          };
+        }),
+    );
 
     return reply.send(
       videos
@@ -196,7 +201,8 @@ app.get(
             videoid: { type: "string", format: "uuid" },
             qrConfigure: {
               type: "string",
-              description: "data:image/png;base64 QR for `configureDestination`.",
+              description:
+                "data:image/png;base64 QR for `configureDestination`.",
             },
             qrUpload: {
               type: "string",
@@ -220,7 +226,10 @@ app.get(
     const server = `${proto}://${host}`;
     const videoid = randomUUID();
 
-    const configureDestination = buildConfigureDestinationLink({ server, name: "Demo Server" });
+    const configureDestination = buildConfigureDestinationLink({
+      server,
+      name: "Demo Server",
+    });
     const upload = buildUploadLink({ server, videoid });
 
     const qrOpts = {
@@ -254,7 +263,7 @@ await app.register(pulseVault, {
   allowedExtensions: [".mp4"],
 });
 
-const port = Number(process.env.PORT ?? 3030);
+const port = Number(process.env.PORT ?? 3000);
 const host = process.env.HOST ?? "0.0.0.0";
 
 await app.listen({ port, host });
