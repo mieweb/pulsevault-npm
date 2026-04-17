@@ -1,0 +1,67 @@
+{
+  "name": "@mieweb/pulsevault",
+  "version": "0.0.1",
+  "description": "Fastify plugin for resumable video uploads via TUS, with a pluggable storage adapter and first-party @mieweb/artipod-backed local storage.",
+  "type": "module",
+  "main": "./dist/app.js",
+  "types": "./dist/app.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/app.d.ts",
+      "import": "./dist/app.js",
+      "default": "./dist/app.js"
+    },
+    "./augment": {
+      "types": "./dist/augment.d.ts",
+      "import": "./dist/augment.js",
+      "default": "./dist/augment.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "fastify",
+    "fastify-plugin",
+    "tus",
+    "tus-server",
+    "video",
+    "upload",
+    "resumable",
+    "artipod",
+    "pulsevault"
+  ],
+  "author": "Medical Informatics Engineering, Inc.",
+  "contributors": [
+    "morepriyam (https://github.com/morepriyam)"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "fastify": "^5.8.5"
+  },
+  "dependencies": {
+    "@fastify/send": "^4.1.0",
+    "@mieweb/artipod": "^0.3.1",
+    "@tus/file-store": "^2.0.0",
+    "@tus/server": "^2.0.0",
+    "fastify-plugin": "^5.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "fastify": "^5.8.5",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

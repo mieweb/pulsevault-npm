@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pulse — Connect Your Phone</title>
+    <style>
+      :root {
+        font-family: system-ui, sans-serif;
+        background: #0f1419;
+        color: #e6edf3;
+      }
+      body {
+        max-width: 40rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        line-height: 1.5;
+      }
+      h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      .card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-top: 1rem;
+      }
+      .open-btn {
+        display: block;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #fff;
+        background: #238636;
+        border-radius: 6px;
+        text-align: center;
+        text-decoration: none;
+        margin-bottom: 0.75rem;
+      }
+      .open-btn:hover {
+        background: #2ea043;
+      }
+      .mono {
+        font-family: ui-monospace, monospace;
+        font-size: 0.75rem;
+        word-break: break-all;
+        color: #8b949e;
+      }
+      label {
+        display: block;
+        font-size: 0.875rem;
+        color: #8b949e;
+        margin-bottom: 0.25rem;
+      }
+      ol {
+        padding-left: 1.25rem;
+        margin: 0.5rem 0 0;
+      }
+      li {
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid #30363d;
+        margin: 1rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Pulse — Connect Your Phone</h1>
+    <p>Pair the Pulse app with this local demo server to upload videos over your WiFi network.</p>
+
+    <div class="card">
+      <strong>1 — Save this server in the app</strong>
+
+      <label style="margin-top:0.75rem;">Server</label>
+      <p class="mono" id="serverUrl"></p>
+
+      <hr class="divider" />
+
+      <p style="font-size:0.875rem; color:#8b949e; margin:0 0 0.5rem;">
+        Scan from your phone's camera app, or tap the button if you're on the same device:
+      </p>
+
+      <img id="qrConfigure" width="224" height="224" style="display:block;margin:1.25rem auto;border-radius:8px;background:#fff;padding:10px;" />
+
+      <a id="openBtnConfigure" class="open-btn" href="#">Open in Pulse App</a>
+
+      <label>Deep link</label>
+      <p class="mono" id="deeplinkConfigure"></p>
+    </div>
+
+    <div class="card">
+      <strong>2 — Upload a specific draft</strong>
+      <p style="font-size:0.875rem; color:#8b949e; margin:0.5rem 0 0;">
+        Each QR is tied to one draft. Scan it in the app to open that draft's upload screen pointed at this server.
+      </p>
+
+      <hr class="divider" />
+
+      <p style="font-size:0.875rem; color:#8b949e; margin:0 0 0.5rem;">
+        Scan from your phone's camera app, or tap the button if you're on the same device:
+      </p>
+
+      <img id="qrUpload" width="224" height="224" style="display:block;margin:1.25rem auto;border-radius:8px;background:#fff;padding:10px;" />
+
+      <a id="openBtnUpload" class="open-btn" href="#">Open in Pulse App</a>
+
+      <button id="refreshUpload" style="display:block;width:100%;padding:0.5rem;margin-bottom:0.75rem;font-size:0.875rem;background:#161b22;color:#8b949e;border:1px solid #30363d;border-radius:6px;cursor:pointer;">
+        ↻ New draft QR
+      </button>
+
+      <label>Video ID</label>
+      <p class="mono" id="uploadVideoid"></p>
+
+      <label>Deep link</label>
+      <p class="mono" id="deeplinkUpload"></p>
+    </div>
+
+    <div class="card">
+      <strong>Uploaded Video</strong>
+      <div id="videoContainer" style="margin-top:0.75rem;">
+        <video id="uploadedVideo" controls style="width:100%;border-radius:6px;background:#000;display:none;"></video>
+        <p id="videoError" class="mono" style="display:none;color:#f85149;"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong>How to use</strong>
+      <ol>
+        <li>Make sure your phone is on the <strong>same WiFi</strong> as this computer.</li>
+        <li>Open this page from your phone's browser using your laptop's IP address.</li>
+        <li>Scan the <em>Save server</em> QR — it adds "Demo Server" to your Pulse destinations.</li>
+        <li>To upload a specific draft: scan the <em>Upload draft</em> QR and follow the prompt in the app.</li>
+      </ol>
+    </div>
+
+    <script>
+      async function loadDeeplinks() {
+        const data = await fetch("/deeplinks").then((r) => r.json());
+
+        document.getElementById("serverUrl").textContent = window.location.origin;
+
+        document.getElementById("deeplinkConfigure").textContent = data.configureDestination;
+        document.getElementById("openBtnConfigure").href = data.configureDestination;
+
+        document.getElementById("uploadVideoid").textContent = data.videoid;
+        document.getElementById("deeplinkUpload").textContent = data.upload;
+        document.getElementById("openBtnUpload").href = data.upload;
+
+        document.getElementById("qrConfigure").src = data.qrConfigure;
+        document.getElementById("qrUpload").src = data.qrUpload;
+      }
+
+      loadDeeplinks();
+      document.getElementById("refreshUpload").addEventListener("click", loadDeeplinks);
+
+      async function loadVideo() {
+        const videoid = "3402fd36-1afa-4ea9-9ae9-e77d46aea606";
+        const video = document.getElementById("uploadedVideo");
+        const error = document.getElementById("videoError");
+        const res = await fetch(`/${videoid}`, { method: "HEAD" });
+        if (res.ok) {
+          video.src = `/${videoid}`;
+          video.style.display = "block";
+        } else {
+          error.textContent = `Video ${videoid} not found (${res.status})`;
+          error.style.display = "block";
+        }
+      }
+
+      loadVideo();
+    </script>
+  </body>
+</html>

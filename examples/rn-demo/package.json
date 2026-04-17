@@ -1,0 +1,15 @@
+{
+  "name": "pulsevault-rn-demo",
+  "private": true,
+  "type": "module",
+  "description": "Fastify demo server for the Pulse React Native app — no auth, TUS protocol, QR code pairing",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "dependencies": {
+    "@mieweb/pulsevault": "file:../..",
+    "fastify": "^5.8.5",
+    "qrcode": "^1.5.4"
+  }
+}
